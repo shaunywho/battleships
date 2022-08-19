@@ -15,10 +15,11 @@ class UserInterface
     show "You have these ships remaining: #{ships_unplaced_message(game)}"
     prompt_for_ship_placement(game)
     show "This is your board now:"
-    show format_board(game)
+    show player_board(game)
   end
 
   def setup_player(game)
+    show "Player #{game.name}'s Turn"
     while not game.unplaced_ships.empty?
       place_ship_on_board(game)
     end
@@ -31,28 +32,31 @@ class UserInterface
 
   def play(game1, game2)
 
-    while !(finished?(game1) || finished?(game2))
-      # prompt_for_player(game2)
-      prompt_for_player(game1)
+    while !(finished?(game1,game2))
+      prompt_for_player(game2,game1)
+      prompt_for_player(game1,game2)
     end
     winner_message(game1, game2)
   end 
 
-  def prompt_for_player(game)
+  def prompt_for_player(game1, game2)
+    show "Player #{game1.name}'s Turn"
     show "This is your board now:"
-    show format_board(game)
+    show player_board(game1)
+    show "This is your opponent's board now:"
+    show opponent_board(game2)
     show "Please choose position"
     y = prompt "Select row"
     x = prompt "Select column"
-    while !shot_move_valid?(game,y,x)
+    while !shot_move_valid?(game2,y,x)
       show "Invalid Input, Try Again"
       y = prompt "Select row"
       x = prompt "Select column"
     end 
-    if game.player_ship_at?(y.to_i,x.to_i)
+    if game2.player_ship_at?(y.to_i,x.to_i)
       show "Hit!"
     end 
-    game.place_shot(y.to_i,x.to_i)
+    game2.place_shot(y.to_i,x.to_i)
   end 
 
   def shot_input_valid(row,col)
@@ -70,15 +74,15 @@ class UserInterface
 
 
   def winner_message(game1,game2)
-    if game1.finished?
-      show("Player 1 wins!")
-    else
+    if game1.lost?
       show("Player 2 wins!")
+    else
+      show("Player 1 wins!")
     end 
   end 
 
-  def finished?(game)
-    if game.finished?
+  def finished?(game1, game2)
+    if game1.lost? || game2.lost?
       return true
     else 
       return false
@@ -89,8 +93,7 @@ class UserInterface
 
   def run
     intro
-    setup_player(@game1)
-    setup_player(@game2)
+    setup_board(@game1, @game2)
     play(@game1, @game2)
   end
 
@@ -153,7 +156,13 @@ class UserInterface
   #   end.join("\n")
   # end
 
-  def format_board(game)
+
+  def player_board(game)
     game.player_state.map(&:join).join("\n")
   end 
+
+  def opponent_board(game)
+    game.opponent_state.map(&:join).join("\n")
+  end 
+    
 end

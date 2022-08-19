@@ -261,11 +261,12 @@ RSpec.describe UserInterface do
     
     it "run stops when all ships are placed" do
       io = double(:io)
-      game1 = double(:game, rows: 10, cols: 10)
-      game2 = double(:game, rows: 10, cols: 10)
+      game1 = double(:game, rows: 10, cols: 10, name: 1)
+      game2 = double(:game, rows: 10, cols: 10, name: 2)
       interface = UserInterface.new(io, game1, game2)
       expect(game1).to receive(:unplaced_ships).and_return([double(:ship, length: 2)])
       expect(game1).to receive(:unplaced_ships).and_return([double(:ship, length: 2)])
+      expect(io).to receive(:puts).with("Player 1's Turn")
       expect(io).to receive(:puts).with("You have these ships remaining: 2")
       expect(io).to receive(:puts).with("Which do you wish to place?")
       expect(io).to receive(:gets).and_return("2\n")
@@ -308,16 +309,17 @@ RSpec.describe UserInterface do
         ".........."
       ].join("\n"))
       expect(game1).to receive(:unplaced_ships).and_return([])
-      interface.setup_board(game1,game2)
+      interface.setup_player(game1)
     end  
   end
 
   describe "shot taking scenario" do
     it "allows the user to shoot a ship" do
       io = double(:io)
-      game1 = double(:game, rows: 10, cols: 10)
-      game2 = double(:game)
+      game1 = double(:game, rows: 10, cols: 10, name: 1)
+      game2 = double(:game, name: 2)
       user_interface = UserInterface.new(io, game1, game2)
+      expect(io).to receive(:puts).with("Player 1's Turn")
       expect(io).to receive(:puts).with("This is your board now:")
       allow(game1).to receive(:player_state).and_return([
         [".",".",".",".",".",".",".",".",".","."],
@@ -342,16 +344,40 @@ RSpec.describe UserInterface do
         "..........",
         ".........."
       ].join("\n"))
+      expect(io).to receive(:puts).with("This is your opponent's board now:")
+      allow(game2).to receive(:opponent_state).and_return([
+        [".",".",".",".",".",".",".",".",".","."],
+        [".",".",".",".",".",".",".",".",".","."],
+        [".",".",".",".",".",".",".",".",".","."],
+        [".",".",".",".",".",".",".",".",".","."],
+        [".",".",".",".",".",".",".",".",".","."],
+        [".",".",".",".",".",".",".",".",".","."],
+        [".",".",".",".",".",".",".",".",".","."],
+        [".",".",".",".",".",".",".",".",".","."],
+        [".",".",".",".",".",".",".",".",".","."],
+        [".",".",".",".",".",".",".",".",".","."]])
+      expect(io).to receive(:puts).with([
+          "..........",
+          "..........",
+          "..........",
+          "..........",
+          "..........",
+          "..........",
+          "..........",
+          "..........",
+          "..........",
+          ".........."
+        ].join("\n"))
       expect(io).to receive(:puts).with("Please choose position")
       expect(io).to receive(:puts).with("Select row")
       expect(io).to receive(:gets).and_return("3\n")
       expect(io).to receive(:puts).with("Select column")
       expect(io).to receive(:gets).and_return("2\n")
-      expect(game1).to receive(:shot_available?).with(3,2).and_return(true)
-      expect(game1).to receive(:player_ship_at?).with(3,2).and_return(true)
+      expect(game2).to receive(:shot_available?).with(3,2).and_return(true)
+      expect(game2).to receive(:player_ship_at?).with(3,2).and_return(true)
       expect(io). to receive(:puts).with("Hit!")
-      expect(game1).to receive(:place_shot).with(3,2)
-      user_interface.prompt_for_player(game1)
+      expect(game2).to receive(:place_shot).with(3,2)
+      user_interface.prompt_for_player(game1,game2)
     end
   end
 

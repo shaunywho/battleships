@@ -137,27 +137,34 @@ RSpec.describe "Integration" do
   describe "prompt_for_player" do
     before(:each) do     
       @io = TerminalIO.new
-      @game1 = Game.new
-      game2 = Game.new
-      @user_interface = UserInterface.new(@io, @game1, game2)
-      @game1.place_ship(length: 5,orientation: :vertical, row: 1, col: 1)
+      @game1 = Game.new(ships: [1])
+      @game2 = Game.new(ships: [1])
+      @user_interface = UserInterface.new(@io, @game1, @game2)
+      @game1.place_ship(length: 1,orientation: :vertical, row: 1, col: 1)
+      @game2.place_ship(length:1 , orientation: :vertical, row: 1, col: 1)
     end
 
     it "should allow the user to shoot a ship" do
+      expect(@io).to receive(:puts).with("Player 1's Turn")
       expect(@io).to receive(:puts).with("This is your board now:")
-      expect(@io).to receive(:puts).with("S.........\nS.........\nS.........\nS.........\nS.........\n..........\n..........\n..........\n..........\n..........")
+      expect(@io).to receive(:puts).with("S.........\n..........\n..........\n..........\n..........\n..........\n..........\n..........\n..........\n..........")
+      expect(@io).to receive(:puts).with("This is your opponent's board now:")
+      expect(@io).to receive(:puts).with("..........\n..........\n..........\n..........\n..........\n..........\n..........\n..........\n..........\n..........")
       expect(@io).to receive(:puts).with("Please choose position")
       expect(@io).to receive(:puts).with("Select row")
       expect(@io).to receive(:gets).and_return("1\n")
       expect(@io).to receive(:puts).with("Select column")
       expect(@io).to receive(:gets).and_return("1\n")
       expect(@io).to receive(:puts).with("Hit!")
-      @user_interface.prompt_for_player(@game1)
+      @user_interface.prompt_for_player(@game1,@game2)
     end
 
     it "should prevent the user from shooting in the same place" do
+      expect(@io).to receive(:puts).with("Player 1's Turn")
       expect(@io).to receive(:puts).with("This is your board now:")
-      expect(@io).to receive(:puts).with("X.........\nS.........\nS.........\nS.........\nS.........\n..........\n..........\n..........\n..........\n..........")
+      expect(@io).to receive(:puts).with("S.........\n..........\n..........\n..........\n..........\n..........\n..........\n..........\n..........\n..........")
+      expect(@io).to receive(:puts).with("This is your opponent's board now:")
+      expect(@io).to receive(:puts).with("X.........\n..........\n..........\n..........\n..........\n..........\n..........\n..........\n..........\n..........")
       expect(@io).to receive(:puts).with("Please choose position")
       expect(@io).to receive(:puts).with("Select row")
       expect(@io).to receive(:gets).and_return("1\n")
@@ -168,12 +175,15 @@ RSpec.describe "Integration" do
       expect(@io).to receive(:gets).and_return("1\n")
       expect(@io).to receive(:puts).with("Select column")
       expect(@io).to receive(:gets).and_return("2\n")
-      @game1.place_shot(1,1)
-      @user_interface.prompt_for_player(@game1)
+      @game2.place_shot(1,1)
+      @user_interface.prompt_for_player(@game1, @game2)
     end
     it "should prevent the user from shooting outside of the board" do
+      expect(@io).to receive(:puts).with("Player 1's Turn")
       expect(@io).to receive(:puts).with("This is your board now:")
-      expect(@io).to receive(:puts).with("S.........\nS.........\nS.........\nS.........\nS.........\n..........\n..........\n..........\n..........\n..........")
+      expect(@io).to receive(:puts).with("S.........\n..........\n..........\n..........\n..........\n..........\n..........\n..........\n..........\n..........")
+      expect(@io).to receive(:puts).with("This is your opponent's board now:")
+      expect(@io).to receive(:puts).with("..........\n..........\n..........\n..........\n..........\n..........\n..........\n..........\n..........\n..........")
       expect(@io).to receive(:puts).with("Please choose position")
       expect(@io).to receive(:puts).with("Select row")
       expect(@io).to receive(:gets).and_return("11\n")
@@ -184,37 +194,43 @@ RSpec.describe "Integration" do
       expect(@io).to receive(:gets).and_return("1\n")
       expect(@io).to receive(:puts).with("Select column")
       expect(@io).to receive(:gets).and_return("2\n")
-      @user_interface.prompt_for_player(@game1)
+      @user_interface.prompt_for_player(@game1, @game2)
     end
   end 
 
   describe "run" do
     before(:each) do     
       @io = TerminalIO.new
-      @game1 = Game.new(ships:[1])
-      @game2 = Game.new(ships:[1])
+      @game1 = Game.new(ships:[1], name: 1)
+      @game2 = Game.new(ships:[1], name: 2)
       @user_interface = UserInterface.new(@io, @game1, @game2)
       @game1.place_ship(length: 1,orientation: :vertical, row: 1, col: 1)
       @game2.place_ship(length: 1,orientation: :vertical, row: 2, col: 2)
     end
 
     it "ends when player 1 shoots down all of player 2's ships" do
+      expect(@io).to receive(:puts).with("Player 1's Turn")
       expect(@io).to receive(:puts).with("This is your board now:")
-      expect(@io).to receive(:puts).with("S.........\n..........\n..........\n..........\n..........\n..........\n..........\n..........\n..........\n..........")
+      expect(@io).to receive(:puts).with("..........\n.S........\n..........\n..........\n..........\n..........\n..........\n..........\n..........\n..........")
+      expect(@io).to receive(:puts).with("This is your opponent's board now:")
+      expect(@io).to receive(:puts).with("..........\n..........\n..........\n..........\n..........\n..........\n..........\n..........\n..........\n..........")
       expect(@io).to receive(:puts).with("Please choose position")
       expect(@io).to receive(:puts).with("Select row")
       expect(@io).to receive(:gets).and_return("1\n")
       expect(@io).to receive(:puts).with("Select column")
       expect(@io).to receive(:gets).and_return("1\n")
       expect(@io).to receive(:puts).with("Hit!")
+      expect(@io).to receive(:puts).with("Player 2's Turn")
       expect(@io).to receive(:puts).with("This is your board now:")
-      expect(@io).to receive(:puts).with("..........\n.S........\n..........\n..........\n..........\n..........\n..........\n..........\n..........\n..........")
+      expect(@io).to receive(:puts).with("X.........\n..........\n..........\n..........\n..........\n..........\n..........\n..........\n..........\n..........")
+      expect(@io).to receive(:puts).with("This is your opponent's board now:")
+      expect(@io).to receive(:puts).with("..........\n..........\n..........\n..........\n..........\n..........\n..........\n..........\n..........\n..........")
       expect(@io).to receive(:puts).with("Please choose position")
       expect(@io).to receive(:puts).with("Select row")
       expect(@io).to receive(:gets).and_return("1\n")
       expect(@io).to receive(:puts).with("Select column")
       expect(@io).to receive(:gets).and_return("1\n")
-      expect(@io).to receive(:puts).with("Player 1 wins!")
+      expect(@io).to receive(:puts).with("Player 2 wins!")
       @user_interface.play(@game1, @game2)
 
     end 

@@ -46,7 +46,8 @@ require 'pp'
 
 class Game
   attr_accessor :total_targets, :total_shots
-  def initialize(columns: 10, rows: 10, ships: [5,4,4,3,3,3,3,3,3,3,2,2,2,2,2])
+  def initialize(columns: 10, rows: 10, ships: [5,4,4,3,3,3,3,3,3,3,2,2,2,2,2], name: 1)
+    @name = name
     @unplaced_ships = ships.map{|length| Ship.new(length)}
     @total_targets = ships.sum
     @total_shots = 0
@@ -69,11 +70,15 @@ class Game
     @unplaced_ships
   end
 
+  def name 
+    @name
+  end 
+  
   def rows
     @rows
   end
 
-  def finished?
+  def lost?
     if @total_targets == @total_shots
       true
     else 
@@ -89,6 +94,9 @@ class Game
   def player_state
     @player_state
   end 
+  def opponent_state
+    @opponent_state
+  end 
 
   def player_ship_at?(y,x)
     @player_state[y-1][x-1] == "S"
@@ -98,11 +106,10 @@ class Game
     if player_ship_at?(y,x)
       @total_shots += 1
       @opponent_state[y-1][x-1] = "X"
-      @player_state[y-1][x-1] = "X"
     else
       @opponent_state[y-1][x-1] = "O"
-      @player_state[y-1][x-1] = "X"
     end
+      @player_state[y-1][x-1] = "X"
   end
 
   def shot_available?(y,x)

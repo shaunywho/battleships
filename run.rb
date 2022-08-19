@@ -12,8 +12,10 @@ class TerminalIO
 end
 
 io = TerminalIO.new
-game1 = Game.new(ships: [2])
-game2 = Game.new(ships: [3])
+game1 = Game.new(name: 1)
+game2 = Game.new(name: 2)
 user_interface = UserInterface.new(io, game1, game2)
 user_interface.intro
 user_interface.run
+
+
